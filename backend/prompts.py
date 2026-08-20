@@ -117,3 +117,68 @@ def build_summarization_prompt(text: str, style: str) -> str:
         style=normalized_style,
         instructions=instructions,
     )
+
+
+QUIZ_DIFFICULTIES = ("beginner", "intermediate", "advanced")
+
+QUIZ_PROMPT_TEMPLATE = """You are CampusMate AI, a helpful study assistant.
+Your task is to generate a multiple-choice quiz about the topic below.
+
+Topic: {topic}
+Difficulty level: {difficulty}
+Number of questions: {question_count}
+
+Difficulty guidance:
+{difficulty_guidance}
+
+Output expectations:
+- Return valid JSON only.
+- Do not include markdown fences or commentary.
+- Create exactly {question_count} questions.
+- Each question must have exactly four answer choices labeled A, B, C, and D.
+- Exactly one answer choice per question must be correct.
+- Make the quiz appropriate for the selected difficulty.
+- Do not invent facts beyond the chosen topic and expected level.
+
+Required JSON structure:
+{{
+  "topic": "{topic}",
+  "difficulty": "{difficulty}",
+  "questions": [
+    {{
+      "question": "Question text",
+      "options": {{
+        "A": "Option text",
+        "B": "Option text",
+        "C": "Option text",
+        "D": "Option text"
+      }},
+      "correct_answer": "A"
+    }}
+  ]
+}}
+"""
+
+QUIZ_DIFFICULTY_GUIDANCE = {
+    "beginner": (
+        "Questions should focus on definitions, basic concepts, and simple understanding."
+    ),
+    "intermediate": (
+        "Questions may test application, relationships between concepts, and practical understanding."
+    ),
+    "advanced": (
+        "Questions may test deeper mechanisms, technical details, reasoning, and edge cases where appropriate."
+    ),
+}
+
+
+def build_quiz_prompt(topic: str, difficulty: str, question_count: int) -> str:
+    """Build the prompt used for generating a multiple-choice quiz."""
+    normalized_difficulty = difficulty.strip().lower()
+    guidance = QUIZ_DIFFICULTY_GUIDANCE[normalized_difficulty]
+    return QUIZ_PROMPT_TEMPLATE.format(
+        topic=topic.strip(),
+        difficulty=normalized_difficulty,
+        question_count=question_count,
+        difficulty_guidance=guidance,
+    )
