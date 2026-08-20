@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 EXPLANATION_LEVELS = ("beginner", "intermediate", "advanced")
+SUMMARY_STYLES = ("short", "detailed", "bullet_points", "beginner_friendly")
 
 QUESTION_ANSWER_PROMPT_TEMPLATE = """You are CampusMate AI, a helpful study assistant.
 Answer the student's question clearly and in understandable language.
@@ -60,4 +61,59 @@ def build_explanation_prompt(topic: str, level: str) -> str:
         topic=topic.strip(),
         level=normalized_level,
         style=style,
+    )
+
+
+SUMMARIZATION_PROMPT_TEMPLATE = """You are CampusMate AI, a helpful study assistant.
+Your task is to summarize the supplied text for a student.
+Selected summary style: {style}
+
+Style-specific instructions:
+{instructions}
+
+Output expectations:
+- Preserve the main ideas and important details from the original text.
+- Do not invent information that does not appear in the supplied text.
+- Keep the summary aligned with the selected style.
+- Present the summary clearly and in a student-friendly way.
+
+Original text:
+{text}
+"""
+
+SUMMARIZATION_STYLE_INSTRUCTIONS = {
+    "short": (
+        "Produce a concise summary with only the most important ideas and avoid unnecessary detail."
+    ),
+    "detailed": (
+        "Produce a more complete summary covering the main idea, important supporting points, "
+        "and relevant details, while still being shorter than the original text."
+    ),
+    "bullet_points": (
+        "Return the important information as clear, organized bullet points and avoid long paragraphs."
+    ),
+    "beginner_friendly": (
+        "Rewrite the important ideas using simple language, short explanations, and minimal technical terminology. "
+        "If an important technical term must remain, explain it briefly."
+    ),
+}
+
+SUMMARY_STYLE_NORMALIZATIONS = {
+    "short": "short",
+    "detailed": "detailed",
+    "bullet points": "bullet_points",
+    "bullet_points": "bullet_points",
+    "beginner friendly": "beginner_friendly",
+    "beginner_friendly": "beginner_friendly",
+}
+
+
+def build_summarization_prompt(text: str, style: str) -> str:
+    """Build the prompt used for summarizing text at a chosen style."""
+    normalized_style = style.strip().lower()
+    instructions = SUMMARIZATION_STYLE_INSTRUCTIONS[normalized_style]
+    return SUMMARIZATION_PROMPT_TEMPLATE.format(
+        text=text.strip(),
+        style=normalized_style,
+        instructions=instructions,
     )
