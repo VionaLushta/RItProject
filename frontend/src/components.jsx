@@ -118,6 +118,13 @@ function Icon({ name }) {
           <path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z" />
         </svg>
       );
+    case "user":
+      return (
+        <svg {...commonProps}>
+          <path d="M20 21a8 8 0 1 0-16 0" />
+          <circle cx="12" cy="8" r="4" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -180,8 +187,13 @@ export function Header({ onMenuClick }) {
       </div>
 
       <div className="profile-chip" aria-label="Student profile">
-        <span className="profile-chip__name">Student</span>
-        <span className="profile-chip__role">Learner</span>
+        <span className="profile-chip__avatar" aria-hidden="true">
+          <Icon name="user" />
+        </span>
+        <span className="profile-chip__text">
+          <span className="profile-chip__name">Student</span>
+          <span className="profile-chip__role">Learner</span>
+        </span>
       </div>
     </header>
   );
