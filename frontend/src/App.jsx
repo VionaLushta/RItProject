@@ -1,40 +1,15 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppLayout } from "./components";
-import { DashboardPage, PlaceholderPage } from "./pages";
-
-const PLACEHOLDERS = [
-  {
-    path: "/ask-ai",
-    title: "Ask AI",
-    description: "Ask CampusMate questions about the topics you're studying.",
-  },
-  {
-    path: "/explain-topic",
-    title: "Explain Topic",
-    description: "Explore a topic at the level that feels right for you.",
-  },
-  {
-    path: "/summarize",
-    title: "Summarize",
-    description: "Turn long material into shorter study notes.",
-  },
-  {
-    path: "/quiz",
-    title: "Quiz",
-    description: "Generate practice questions for the topic you want to review.",
-  },
-  {
-    path: "/history",
-    title: "History",
-    description: "Review your earlier questions and completed quizzes.",
-  },
-  {
-    path: "/statistics",
-    title: "Statistics",
-    description: "Track your study activity and progress over time.",
-  },
-];
+import {
+  AskAiPage,
+  DashboardPage,
+  ExplainTopicPage,
+  HistoryPage,
+  QuizPage,
+  StatisticsPage,
+  SummarizePage,
+} from "./pages";
 
 function Shell() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -59,13 +34,12 @@ function Shell() {
     >
       <Routes>
         <Route path="/" element={<DashboardPage />} />
-        {PLACEHOLDERS.map((page) => (
-          <Route
-            key={page.path}
-            path={page.path}
-            element={<PlaceholderPage title={page.title} description={page.description} />}
-          />
-        ))}
+        <Route path="/ask-ai" element={<AskAiPage />} />
+        <Route path="/explain-topic" element={<ExplainTopicPage />} />
+        <Route path="/summarize" element={<SummarizePage />} />
+        <Route path="/quiz" element={<QuizPage />} />
+        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/statistics" element={<StatisticsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AppLayout>

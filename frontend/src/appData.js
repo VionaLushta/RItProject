@@ -70,9 +70,17 @@ export const PAGE_META = {
   },
 };
 
-export const DASHBOARD_STATS = [
-  { label: "Questions Asked", value: "0", hint: "Awaiting backend data", icon: "ask" },
-  { label: "Quizzes Completed", value: "0", hint: "Awaiting backend data", icon: "quiz" },
-  { label: "Correct Answers", value: "0", hint: "Awaiting backend data", icon: "statistics" },
-  { label: "Average Score", value: "0.0%", hint: "Awaiting backend data", icon: "chart" },
+export const DIFFICULTY_OPTIONS = [
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
 ];
+
+export const SUMMARY_STYLE_OPTIONS = [
+  { value: "short", label: "Short" },
+  { value: "detailed", label: "Detailed" },
+  { value: "bullet_points", label: "Bullet Points" },
+  { value: "beginner_friendly", label: "Beginner Friendly" },
+];
+
+export const QUIZ_COUNT_OPTIONS = Array.from({ length: 10 }, (_, index) => index + 1);

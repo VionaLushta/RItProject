@@ -98,6 +98,26 @@ function Icon({ name }) {
           <path d="m13 6 6 6-6 6" />
         </svg>
       );
+    case "check":
+      return (
+        <svg {...commonProps}>
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+      );
+    case "alert":
+      return (
+        <svg {...commonProps}>
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+          <path d="M10.3 4.5h3.4l7 12.1a2 2 0 0 1-1.7 3H4.9a2 2 0 0 1-1.7-3z" />
+        </svg>
+      );
+    case "spark":
+      return (
+        <svg {...commonProps}>
+          <path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -170,7 +190,11 @@ export function Header({ onMenuClick }) {
 export function AppLayout({ children, mobileNavOpen, onMenuClick, onCloseMobileNav }) {
   return (
     <div className="app-layout">
-      <div className={`app-overlay ${mobileNavOpen ? "is-visible" : ""}`} onClick={onCloseMobileNav} aria-hidden="true" />
+      <div
+        className={`app-overlay ${mobileNavOpen ? "is-visible" : ""}`}
+        onClick={onCloseMobileNav}
+        aria-hidden="true"
+      />
       <Sidebar mobileOpen={mobileNavOpen} onClose={onCloseMobileNav} />
       <div className="app-layout__content">
         <Header onMenuClick={onMenuClick} />
@@ -226,5 +250,101 @@ export function EmptyState({ title, description }) {
         <p>{description}</p>
       </div>
     </section>
+  );
+}
+
+export function Field({ label, hint, error, children, required = false, htmlFor }) {
+  const errorId = htmlFor ? `${htmlFor}-error` : undefined;
+
+  return (
+    <div className={`field ${error ? "has-error" : ""}`}>
+      <div className="field__label-row">
+        <label className="field__label" htmlFor={htmlFor}>
+          {label}
+          {required ? <span aria-hidden="true"> *</span> : null}
+        </label>
+        {hint ? <span className="field__hint">{hint}</span> : null}
+      </div>
+      {children}
+      {error ? (
+        <p id={errorId} className="field__error" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function TextAreaField(props) {
+  return <textarea className="form-control form-control--textarea" {...props} />;
+}
+
+export function InputField(props) {
+  return <input className="form-control" {...props} />;
+}
+
+export function SelectField(props) {
+  return <select className="form-control" {...props} />;
+}
+
+export function ActionButton({ children, variant = "primary", ...props }) {
+  return (
+    <button className={`action-button action-button--${variant}`} {...props}>
+      {children}
+    </button>
+  );
+}
+
+export function StatusBanner({ tone = "info", title, message, icon = "spark" }) {
+  if (!title && !message) {
+    return null;
+  }
+
+  return (
+    <div className={`status-banner status-banner--${tone}`} role={tone === "error" ? "alert" : "status"}>
+      <div className="status-banner__icon" aria-hidden="true">
+        <Icon name={icon} />
+      </div>
+      <div className="status-banner__body">
+        {title ? <strong>{title}</strong> : null}
+        {message ? <p>{message}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+export function MetricCard({ label, value, hint, icon }) {
+  return <StatCard label={label} value={value} hint={hint} icon={icon} />;
+}
+
+export function QuizQuestionCard({ index, question, selectedAnswer, onChange, disabled = false }) {
+  return (
+    <fieldset className="quiz-card" disabled={disabled}>
+      <legend className="quiz-card__legend">
+        Question {index}
+      </legend>
+      <p className="quiz-card__question">{question.question}</p>
+      <div className="quiz-options" role="radiogroup" aria-label={`Question ${index}`}>
+        {["A", "B", "C", "D"].map((option) => {
+          const optionId = `question-${index}-option-${option}`;
+          const isChecked = selectedAnswer === option;
+
+          return (
+            <label key={option} className={`quiz-option ${isChecked ? "is-selected" : ""}`} htmlFor={optionId}>
+              <input
+                id={optionId}
+                type="radio"
+                name={`question-${index}`}
+                value={option}
+                checked={isChecked}
+                onChange={() => onChange(option)}
+              />
+              <span className="quiz-option__key">{option}</span>
+              <span className="quiz-option__text">{question.options[option]}</span>
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }
