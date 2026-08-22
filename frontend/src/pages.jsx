@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { QUICK_ACTIONS, DIFFICULTY_OPTIONS, SUMMARY_STYLE_OPTIONS, QUIZ_COUNT_OPTIONS } from "./appData";
 import {
   ActionButton,
-  EmptyState,
   Field,
   InputField,
   MetricCard,
@@ -17,7 +16,6 @@ import {
   askQuestion,
   explainTopic,
   generateQuiz,
-  getHistory,
   getStatistics,
   submitQuiz,
   summarizeText,
@@ -29,24 +27,6 @@ function formatAverageScore(value) {
     return "0.0%";
   }
   return `${numeric.toFixed(1)}%`;
-}
-
-function buildRecentActivity(history) {
-  const questionEntries = history.questions.map((item, index) => ({
-    id: `question-${index}`,
-    type: "Question",
-    title: item.question,
-    description: item.answer,
-  }));
-
-  const quizEntries = history.quizzes.map((item, index) => ({
-    id: `quiz-${index}`,
-    type: "Quiz",
-    title: `${item.topic} - ${item.difficulty}`,
-    description: `${item.correct_answers}/${item.total_questions} correct, ${item.score_percentage}%`,
-  }));
-
-  return [...questionEntries, ...quizEntries].slice(-4).reverse();
 }
 
 function LoadingNotice({ text }) {
@@ -62,7 +42,6 @@ function LoadingNotice({ text }) {
 
 export function DashboardPage() {
   const [stats, setStats] = useState(null);
-  const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -74,12 +53,11 @@ export function DashboardPage() {
       setError("");
 
       try {
-        const [statsResponse, historyResponse] = await Promise.all([getStatistics(), getHistory()]);
+        const statsResponse = await getStatistics();
         if (!active) {
           return;
         }
         setStats(statsResponse);
-        setHistory(historyResponse);
       } catch (err) {
         if (!active) {
           return;
@@ -99,15 +77,37 @@ export function DashboardPage() {
     };
   }, []);
 
-  const recentActivity = useMemo(() => (history ? buildRecentActivity(history) : []), [history]);
-
   return (
     <div className="dashboard">
-      <section className="dashboard-hero">
+      <section className="dashboard-hero dashboard-hero--featured">
         <div className="dashboard-hero__copy">
           <p className="eyebrow">CampusMate AI</p>
           <h2>Welcome to CampusMate AI</h2>
           <p>Your study tools, organized in one place.</p>
+        </div>
+        <div className="dashboard-hero__visual" aria-hidden="true">
+          <div className="dashboard-hero__mesh" />
+          <div className="dashboard-hero__panel dashboard-hero__panel--device">
+            <div className="dashboard-hero__panel-header">
+              <span className="dashboard-hero__pill dashboard-hero__pill--blue">AI</span>
+              <span className="dashboard-hero__pill dashboard-hero__pill--red">Study</span>
+            </div>
+            <div className="dashboard-hero__device">
+              <div className="dashboard-hero__screen">
+                <span className="dashboard-hero__screen-chip">CampusMate</span>
+                <span className="dashboard-hero__screen-code">{"</>"}</span>
+              </div>
+              <div className="dashboard-hero__base" />
+            </div>
+          </div>
+          <div className="dashboard-hero__panel dashboard-hero__panel--stack dashboard-hero__panel--books">
+            <span className="dashboard-hero__book dashboard-hero__book--one" />
+            <span className="dashboard-hero__book dashboard-hero__book--two" />
+            <span className="dashboard-hero__book dashboard-hero__book--three" />
+          </div>
+          <div className="dashboard-hero__badge dashboard-hero__badge--quiz">✓</div>
+          <div className="dashboard-hero__badge dashboard-hero__badge--spark">✦</div>
+          <div className="dashboard-hero__badge dashboard-hero__badge--code">{"{"} {"}"}</div>
         </div>
       </section>
 
@@ -156,31 +156,8 @@ export function DashboardPage() {
             hint={loading ? "Loading..." : "From backend statistics"}
             icon="chart"
           />
+          <MetricCard label="History" value="View your study activity" hint="Open your saved questions and quizzes" icon="history" to="/history" />
         </div>
-      </section>
-
-      <section className="section-block">
-        <div className="section-block__header">
-          <h3>Recent Activity</h3>
-          <p>Most recent questions and quiz results from your history.</p>
-        </div>
-        {!loading && recentActivity.length === 0 ? (
-          <EmptyState
-            title="No study activity yet."
-            description="Your recent questions and quizzes will appear here."
-          />
-        ) : null}
-        {recentActivity.length > 0 ? (
-          <div className="history-cards">
-            {recentActivity.map((item) => (
-              <article className="history-card" key={item.id}>
-                <div className="history-card__meta">{item.type}</div>
-                <h4>{item.title}</h4>
-                <p>{item.description}</p>
-              </article>
-            ))}
-          </div>
-        ) : null}
       </section>
     </div>
   );

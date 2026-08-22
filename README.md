@@ -4,6 +4,10 @@
 
 CampusMate AI is an AI-powered study assistant for students. It helps with asking questions, explaining topics, summarizing text, generating quizzes, taking quizzes, and reviewing study history and statistics.
 
+## Student
+
+Viona Lushta
+
 ## Features
 
 - Ask AI
@@ -98,4 +102,3 @@ npm run build
 - API keys must stay in the local `.env` file.
 - Do not place OpenAI credentials in the frontend.
 - The frontend talks only to the local Python backend.
-

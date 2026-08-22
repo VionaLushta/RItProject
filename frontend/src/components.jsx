@@ -1,7 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { NAV_ITEMS, PAGE_META } from "./appData";
 
-function Icon({ name }) {
+export function Icon({ name }) {
   const commonProps = {
     "aria-hidden": true,
     viewBox: "0 0 24 24",
@@ -112,6 +112,13 @@ function Icon({ name }) {
           <path d="M10.3 4.5h3.4l7 12.1a2 2 0 0 1-1.7 3H4.9a2 2 0 0 1-1.7-3z" />
         </svg>
       );
+    case "shield":
+      return (
+        <svg {...commonProps}>
+          <path d="M12 3 19 6v5c0 4.4-3 8.4-7 10-4-1.6-7-5.6-7-10V6l7-3Z" />
+          <path d="M9.5 12.5 11 14l3.5-4" />
+        </svg>
+      );
     case "spark":
       return (
         <svg {...commonProps}>
@@ -135,7 +142,9 @@ export function Sidebar({ mobileOpen, onClose }) {
     <aside className={`sidebar ${mobileOpen ? "is-open" : ""}`} aria-label="Primary navigation">
       <div className="sidebar__brand">
         <div className="brand-mark" aria-hidden="true">
-          CM
+          <span className="brand-mark__ring" />
+          <span className="brand-mark__core" />
+          <span className="brand-mark__spark" />
         </div>
         <div>
           <div className="brand-title">CampusMate AI</div>
@@ -213,14 +222,23 @@ export function AppLayout({ children, mobileNavOpen, onMenuClick, onCloseMobileN
         <main className="main-content">
           <div className="main-content__inner">{children}</div>
         </main>
+        <aside className="ai-notice" role="note" aria-label="Responsible AI notice">
+          <span className="ai-notice__icon" aria-hidden="true">
+            <Icon name="shield" />
+          </span>
+          <p>AI responses may contain mistakes. Verify important information and never enter passwords or sensitive data.</p>
+        </aside>
       </div>
     </div>
   );
 }
 
-export function StatCard({ label, value, hint, icon }) {
+export function StatCard({ label, value, hint, icon, to }) {
+  const CardTag = to ? Link : "article";
+  const cardProps = to ? { to } : {};
+
   return (
-    <article className="stat-card">
+    <CardTag className={`stat-card ${to ? "stat-card--link" : ""}`} {...cardProps}>
       <div className="stat-card__icon" aria-hidden="true">
         <Icon name={icon} />
       </div>
@@ -229,7 +247,7 @@ export function StatCard({ label, value, hint, icon }) {
         <div className="stat-card__label">{label}</div>
         <div className="stat-card__hint">{hint}</div>
       </div>
-    </article>
+    </CardTag>
   );
 }
 
@@ -325,8 +343,8 @@ export function StatusBanner({ tone = "info", title, message, icon = "spark" }) 
   );
 }
 
-export function MetricCard({ label, value, hint, icon }) {
-  return <StatCard label={label} value={value} hint={hint} icon={icon} />;
+export function MetricCard({ label, value, hint, icon, to }) {
+  return <StatCard label={label} value={value} hint={hint} icon={icon} to={to} />;
 }
 
 export function QuizQuestionCard({ index, question, selectedAnswer, onChange, disabled = false }) {
