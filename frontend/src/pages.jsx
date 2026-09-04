@@ -591,7 +591,7 @@ export function QuizPage() {
               <h3>{quiz.topic} Quiz</h3>
               <p>{quiz.difficulty} level, {quiz.questions.length} questions</p>
             </div>
-            <ActionButton type="button" variant="secondary" onClick={handleSubmitQuiz} disabled={loadingSubmit || !allAnswered}>
+            <ActionButton type="button" variant="secondary" onClick={handleSubmitQuiz} disabled={loadingSubmit}>
               {loadingSubmit ? "Checking answers..." : "Submit Quiz"}
             </ActionButton>
           </div>
