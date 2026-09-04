@@ -584,6 +584,31 @@ export function QuizPage() {
       {loadingGenerate ? <LoadingNotice text="Generating quiz..." /> : null}
       {error ? <StatusBanner tone="error" icon="alert" title="Request failed" message={error} /> : null}
 
+      {scoreResult ? (
+        <section
+          className={`quiz-score-banner ${Number(scoreResult.score_percentage) >= 50 ? "is-passed" : "needs-practice"}`}
+          role="status"
+          aria-label={`Quiz score ${scoreResult.score_percentage}%`}
+        >
+          <div className="quiz-score-banner__main">
+            <span className="quiz-score-banner__eyebrow">Quiz completed</span>
+            <strong>{scoreResult.score_percentage}%</strong>
+            <span className="quiz-score-banner__status">
+              {Number(scoreResult.score_percentage) >= 50 ? "Passed" : "Keep practicing"}
+            </span>
+          </div>
+          <div className="quiz-score-banner__details">
+            <span>{scoreResult.correct_answers} of {scoreResult.total_questions} answers correct</span>
+            <div className="quiz-score-banner__track" aria-hidden="true">
+              <div
+                className="quiz-score-banner__fill"
+                style={{ width: `${Math.max(0, Math.min(100, Number(scoreResult.score_percentage) || 0))}%` }}
+              />
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {quiz ? (
         <section className="result-panel">
           <div className="result-panel__header result-panel__header--stack">

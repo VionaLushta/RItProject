@@ -57,15 +57,111 @@
       "correct_answers": 0,
       "incorrect_answers": 5,
       "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
     }
   ],
   "statistics": {
     "Student": {
       "name": "Student",
       "questions_asked": 8,
-      "quizzes_completed": 3,
+      "quizzes_completed": 15,
       "correct_answers": 0,
-      "incorrect_answers": 15
+      "incorrect_answers": 75
     }
   },
   "interactions": [
