@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { QUICK_ACTIONS, DIFFICULTY_OPTIONS, SUMMARY_STYLE_OPTIONS, QUIZ_COUNT_OPTIONS } from "./appData";
+import { MarkdownResponse } from "./markdownRenderer";
 import {
   ActionButton,
   Field,
@@ -13,9 +14,10 @@ import {
 } from "./components";
 import {
   ApiError,
-  askQuestion,
+  askQuestionStream,
   explainTopic,
   generateQuiz,
+  getHistory,
   getStatistics,
   submitQuiz,
   summarizeText,
@@ -29,13 +31,29 @@ function formatAverageScore(value) {
   return `${numeric.toFixed(1)}%`;
 }
 
+function formatInteractionDate(value) {
+  if (!value) {
+    return "Date unavailable";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Date unavailable";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
 function LoadingNotice({ text }) {
   return (
     <StatusBanner
       tone="info"
       icon="spark"
       title={text}
-      message="Please wait while CampusMate loads your study data."
+      message="Please wait while CampusMate completes this step."
     />
   );
 }
@@ -165,6 +183,7 @@ export function DashboardPage() {
 
 export function AskAiPage() {
   const [question, setQuestion] = useState("");
+  const [submittedQuestion, setSubmittedQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -182,10 +201,19 @@ export function AskAiPage() {
     setLoading(true);
     setError("");
     setValidationError("");
+    setSubmittedQuestion(trimmedQuestion);
+    setQuestion("");
+    setAnswer("");
 
     try {
-      const response = await askQuestion(trimmedQuestion);
-      setAnswer(response.answer);
+      await askQuestionStream(trimmedQuestion, {
+        onChunk: (chunk, currentAnswer) => {
+          setAnswer(currentAnswer || chunk);
+        },
+        onDone: (finalAnswer) => {
+          setAnswer(finalAnswer);
+        },
+      });
     } catch (err) {
       setAnswer("");
       setError(err instanceof ApiError ? err.message : "CampusMate couldn't complete this request. Please try again.");
@@ -195,24 +223,50 @@ export function AskAiPage() {
   }
 
   return (
-    <section className="tool-page">
+    <section className="tool-page ask-chat">
       <div className="tool-page__intro">
         <p className="eyebrow">Ask AI</p>
         <h2>Ask CampusMate a study question.</h2>
         <p>Get a clear answer from the existing Python backend.</p>
       </div>
 
-      <form className="tool-form" onSubmit={handleSubmit}>
+      {submittedQuestion || answer ? (
+        <div className="ask-chat__thread">
+          {submittedQuestion ? (
+            <div className="chat-message chat-message--user">
+              <div className="chat-bubble">{submittedQuestion}</div>
+            </div>
+          ) : null}
+
+          {answer ? (
+            <section className="result-panel chat-message chat-message--assistant">
+              <div className="result-panel__header">
+                <div className="result-panel__identity">
+                  <div className="assistant-avatar" aria-hidden="true">
+                    <span className="assistant-avatar__spark">+</span>
+                  </div>
+                  <div>
+                    <h3>CampusMate</h3>
+                    <p>AI study assistant</p>
+                  </div>
+                </div>
+              </div>
+              <MarkdownResponse className="result-panel__body" content={answer} />
+            </section>
+          ) : null}
+        </div>
+      ) : null}
+
+      <form className="tool-form ask-chat__composer" onSubmit={handleSubmit}>
         <Field
-          label="Question"
+          label="Message"
           htmlFor="ask-question"
-          hint="Write a specific question about a topic you are studying."
           error={validationError}
           required
         >
           <TextAreaField
             id="ask-question"
-            rows={6}
+            rows={1}
             placeholder="What is the difference between TCP and UDP?"
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
@@ -221,22 +275,13 @@ export function AskAiPage() {
 
         <div className="form-actions">
           <ActionButton type="submit" disabled={loading}>
-            {loading ? "Asking CampusMate..." : "Ask CampusMate"}
+            {loading ? "Generating answer..." : "Ask CampusMate"}
           </ActionButton>
         </div>
       </form>
 
-      {loading ? <LoadingNotice text="Asking CampusMate..." /> : null}
+      {loading ? <div className="chat-typing" role="status">CampusMate is thinking<span>...</span></div> : null}
       {error ? <StatusBanner tone="error" icon="alert" title="Request failed" message={error} /> : null}
-
-      {answer ? (
-        <section className="result-panel">
-          <div className="result-panel__header">
-            <h3>Answer</h3>
-          </div>
-          <p className="result-panel__body">{answer}</p>
-        </section>
-      ) : null}
     </section>
   );
 }
@@ -274,14 +319,14 @@ export function ExplainTopicPage() {
   }
 
   return (
-    <section className="tool-page">
+    <section className="tool-page explain-page">
       <div className="tool-page__intro">
         <p className="eyebrow">Explain Topic</p>
         <h2>Explore a topic at the right level.</h2>
         <p>Choose a difficulty and let the backend produce the explanation.</p>
       </div>
 
-      <form className="tool-form" onSubmit={handleSubmit}>
+      <form className="tool-form explain-form" onSubmit={handleSubmit}>
         <Field
           label="Topic"
           htmlFor="explain-topic"
@@ -323,7 +368,7 @@ export function ExplainTopicPage() {
           <div className="result-panel__header">
             <h3>Explanation</h3>
           </div>
-          <p className="result-panel__body">{explanation}</p>
+          <MarkdownResponse className="result-panel__body" content={explanation} />
         </section>
       ) : null}
     </section>
@@ -363,14 +408,14 @@ export function SummarizePage() {
   }
 
   return (
-    <section className="tool-page">
+    <section className="tool-page summarize-page">
       <div className="tool-page__intro">
         <p className="eyebrow">Summarize Text</p>
         <h2>Turn long material into useful study notes.</h2>
         <p>Choose a summary style and send the text to the backend.</p>
       </div>
 
-      <form className="tool-form" onSubmit={handleSubmit}>
+      <form className="tool-form summarize-form" onSubmit={handleSubmit}>
         <Field
           label="Source text"
           htmlFor="summary-text"
@@ -412,7 +457,7 @@ export function SummarizePage() {
           <div className="result-panel__header">
             <h3>Summary</h3>
           </div>
-          <p className="result-panel__body result-panel__body--preserve">{summary}</p>
+          <MarkdownResponse className="result-panel__body result-panel__body--markdown" content={summary} />
         </section>
       ) : null}
     </section>
@@ -491,14 +536,14 @@ export function QuizPage() {
   }
 
   return (
-    <section className="tool-page">
+    <section className="tool-page quiz-page">
       <div className="tool-page__intro">
         <p className="eyebrow">Quiz</p>
         <h2>Generate a practice quiz and submit your answers.</h2>
         <p>Quiz scoring happens in Python. Answers stay hidden until you submit.</p>
       </div>
 
-      <form className="tool-form" onSubmit={handleGenerate}>
+      <form className="tool-form quiz-form" onSubmit={handleGenerate}>
         <Field label="Topic" htmlFor="quiz-topic" hint="Enter the topic you want to test yourself on." error={validationError} required>
           <InputField
             id="quiz-topic"
@@ -609,6 +654,7 @@ export function HistoryPage() {
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -638,12 +684,16 @@ export function HistoryPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [reloadToken]);
 
-  const hasActivity = history && (history.questions.length > 0 || history.quizzes.length > 0);
+  const questions = Array.isArray(history?.questions) ? history.questions : [];
+  const quizzes = Array.isArray(history?.quizzes) ? history.quizzes : [];
+  const interactions = Array.isArray(history?.interactions) ? history.interactions : [];
+  const hasInteractionHistory = interactions.length > 0;
+  const hasActivity = hasInteractionHistory || questions.length > 0 || quizzes.length > 0;
 
   return (
-    <section className="tool-page">
+    <section className="tool-page history-page">
       <div className="tool-page__intro">
         <p className="eyebrow">History</p>
         <h2>Review your stored questions and quizzes.</h2>
@@ -651,7 +701,16 @@ export function HistoryPage() {
       </div>
 
       {loading ? <LoadingNotice text="Loading history..." /> : null}
-      {error ? <StatusBanner tone="error" icon="alert" title="History unavailable" message={error} /> : null}
+      {error ? (
+        <div className="history-error">
+          <StatusBanner tone="error" icon="alert" title="History unavailable" message={error} />
+          <div className="form-actions">
+            <ActionButton type="button" variant="secondary" onClick={() => setReloadToken((value) => value + 1)}>
+              Retry loading history
+            </ActionButton>
+          </div>
+        </div>
+      ) : null}
 
       {!loading && !error && !hasActivity ? (
         <EmptyState
@@ -660,32 +719,83 @@ export function HistoryPage() {
         />
       ) : null}
 
-      {history && history.questions.length > 0 ? (
+      {!loading && !error && hasActivity ? (
+        <div className="history-overview">
+          <div className="history-overview__item">
+            <strong>{hasInteractionHistory ? interactions.length : questions.length + quizzes.length}</strong>
+            <span>AI interactions</span>
+          </div>
+          <div className="history-overview__item">
+            <strong>{quizzes.length}</strong>
+            <span>Quizzes completed</span>
+          </div>
+        </div>
+      ) : null}
+
+      {hasInteractionHistory ? (
+        <section className="section-block history-activity">
+          <div className="section-block__header">
+            <h3>AI Activity</h3>
+            <p>Every question, explanation, summary and quiz is saved with its date and time.</p>
+          </div>
+          <div className="history-list">
+            {[...interactions]
+              .sort((left, right) => new Date(right.created_at) - new Date(left.created_at))
+              .map((item, index) => {
+                let quizDetails = null;
+                if (item.type === "quiz") {
+                  try {
+                    quizDetails = JSON.parse(item.output);
+                  } catch {
+                    quizDetails = null;
+                  }
+                }
+
+                return (
+                  <article className="history-entry history-entry--interaction" key={`${item.created_at}-${index}`}>
+                    <div className="history-entry__topline">
+                      <div className="history-entry__type">{item.title || "AI Activity"}</div>
+                      <time dateTime={item.created_at}>{formatInteractionDate(item.created_at)}</time>
+                    </div>
+                    <h4>{item.input}</h4>
+                    {quizDetails ? (
+                      <p>Quiz generated with {quizDetails.questions?.length ?? 0} questions at {quizDetails.difficulty} level.</p>
+                    ) : (
+                      <MarkdownResponse className="history-entry__response" content={item.output} />
+                    )}
+                  </article>
+                );
+              })}
+          </div>
+        </section>
+      ) : null}
+
+      {!hasInteractionHistory && questions.length > 0 ? (
         <section className="section-block">
           <div className="section-block__header">
             <h3>Questions</h3>
             <p>Original question and answer saved by the backend.</p>
           </div>
           <div className="history-list">
-            {history.questions.map((item, index) => (
+            {questions.map((item, index) => (
               <article className="history-entry" key={`${item.question}-${index}`}>
                 <div className="history-entry__type">Question</div>
                 <h4>{item.question}</h4>
-                <p>{item.answer}</p>
+                <MarkdownResponse className="history-entry__response" content={item.answer} />
               </article>
             ))}
           </div>
         </section>
       ) : null}
 
-      {history && history.quizzes.length > 0 ? (
+      {!hasInteractionHistory && quizzes.length > 0 ? (
         <section className="section-block">
           <div className="section-block__header">
             <h3>Completed Quizzes</h3>
             <p>Persisted quiz results from the backend storage.</p>
           </div>
           <div className="history-list">
-            {history.quizzes.map((item, index) => (
+            {quizzes.map((item, index) => (
               <article className="history-entry" key={`${item.topic}-${index}`}>
                 <div className="history-entry__type">Quiz</div>
                 <h4>{item.topic}</h4>
@@ -737,21 +847,8 @@ export function StatisticsPage() {
     };
   }, []);
 
-  const accuracy = useMemo(() => {
-    if (!stats) {
-      return 0;
-    }
-
-    const totalAnswered = Number(stats.correct_answers || 0) + Number(stats.incorrect_answers || 0);
-    if (!totalAnswered) {
-      return 0;
-    }
-
-    return Math.round((Number(stats.correct_answers || 0) / totalAnswered) * 100);
-  }, [stats]);
-
   return (
-    <section className="tool-page">
+    <section className="tool-page statistics-page">
       <div className="tool-page__intro">
         <p className="eyebrow">Statistics</p>
         <h2>Track your real study activity.</h2>
@@ -770,7 +867,7 @@ export function StatisticsPage() {
             <MetricCard label="Incorrect Answers" value={stats.incorrect_answers} hint="From backend statistics" icon="alert" />
           </div>
 
-          <section className="result-panel">
+          <section className="result-panel statistics-score">
             <div className="result-panel__header">
               <h3>Average Quiz Score</h3>
             </div>
@@ -779,7 +876,7 @@ export function StatisticsPage() {
               <div className="score-meter__track">
                 <div className="score-meter__fill" style={{ width: `${Math.max(0, Math.min(100, Number(stats.average_quiz_score) || 0))}%` }} />
               </div>
-              <p className="score-meter__caption">Accuracy estimate: {accuracy}%</p>
+              <p className="score-meter__caption">Loaded directly from Python statistics.</p>
             </div>
           </section>
         </>

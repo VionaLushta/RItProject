@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import warnings
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -46,6 +47,8 @@ def _normalize_data(data: Any) -> dict[str, Any]:
         normalized["questions"] = questions
     if isinstance(quizzes, list):
         normalized["quizzes"] = quizzes
+    if "interactions" in data and isinstance(data["interactions"], list):
+        normalized["interactions"] = data["interactions"]
     if isinstance(statistics, dict):
         normalized["statistics"] = statistics
 
@@ -108,6 +111,29 @@ def add_question_record(
     return data
 
 
+def add_ai_interaction(
+    interaction_type: str,
+    title: str,
+    user_input: str,
+    output: str,
+    file_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Persist one AI interaction with an exact UTC date and time."""
+    data = load_data(file_path)
+    data.setdefault("interactions", [])
+    data["interactions"].append(
+        {
+            "type": interaction_type,
+            "title": title.strip(),
+            "input": user_input.strip(),
+            "output": output.strip(),
+            "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        }
+    )
+    save_data(data, file_path)
+    return data
+
+
 def get_question_history(file_path: str | Path | None = None) -> list[dict[str, Any]]:
     """Return the saved question history."""
     data = load_data(file_path)
@@ -135,4 +161,3 @@ def save_student_statistics(student: Student | dict[str, Any], file_path: str | 
     data["statistics"][student_name] = student_data
     save_data(data, file_path)
     return data
-

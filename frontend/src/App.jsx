@@ -24,6 +24,7 @@ function Shell() {
 
   useEffect(() => {
     setMobileNavOpen(false);
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [location.pathname]);
 
   return (

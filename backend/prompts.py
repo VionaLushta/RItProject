@@ -10,6 +10,13 @@ Answer the student's question clearly and in understandable language.
 Focus on helping the student learn.
 If the information is uncertain or depends on context, say so instead of pretending it is definitely correct.
 Encourage verification of important information when appropriate.
+Format the response as clean Markdown with:
+- a short title or opening line,
+- short paragraphs,
+- bullet points when listing ideas,
+- fenced code blocks for code or diagrams,
+- fenced `mermaid` blocks when a diagram is helpful.
+Do not put multiple markdown headings inside one paragraph.
 
 Student question:
 {question}
@@ -35,6 +42,8 @@ Output expectations:
 - Use the tone and vocabulary appropriate for the selected level.
 - Include an example when requested by the level guidance.
 - If a detail is uncertain or depends on context, say so clearly.
+- Format the response as clean Markdown with headings, bullets, and short paragraphs.
+- Use fenced code blocks for code examples and fenced `mermaid` blocks for simple diagrams when helpful.
 """
 
 EXPLANATION_LEVEL_STYLES = {
@@ -76,6 +85,8 @@ Output expectations:
 - Do not invent information that does not appear in the supplied text.
 - Keep the summary aligned with the selected style.
 - Present the summary clearly and in a student-friendly way.
+- Format the response as clean Markdown.
+- Use headings, bullets, and short paragraphs when they improve readability.
 
 Original text:
 {text}

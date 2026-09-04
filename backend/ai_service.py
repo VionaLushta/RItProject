@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
 from pathlib import Path
 
 import openai
@@ -21,6 +22,23 @@ def _get_client() -> OpenAI:
     return OpenAI(api_key=api_key)
 
 
+def _translate_openai_error(error: Exception) -> RuntimeError:
+    if isinstance(error, openai.AuthenticationError):
+        return RuntimeError("OpenAI authentication failed. Check your API key.")
+    if isinstance(error, openai.RateLimitError):
+        return RuntimeError("OpenAI rate limit reached. Please try again later.")
+    if isinstance(error, openai.APITimeoutError):
+        return RuntimeError("OpenAI request timed out. Please try again.")
+    if isinstance(error, openai.APIConnectionError):
+        return RuntimeError("Could not connect to OpenAI. Check your internet connection.")
+    if isinstance(error, openai.APIStatusError):
+        status = getattr(error, "status_code", None) or getattr(error, "status", None)
+        return RuntimeError(f"OpenAI request failed with status {status}.")
+    if isinstance(error, openai.APIError):
+        return RuntimeError("OpenAI request failed. Please try again.")
+    return RuntimeError("CampusMate couldn't complete this request. Please try again.")
+
+
 def ask_ai(prompt: str) -> str:
     """Send a prompt to OpenAI and return the text response."""
     if not prompt or not prompt.strip():
@@ -34,19 +52,32 @@ def ask_ai(prompt: str) -> str:
             input=prompt.strip(),
         )
         return (response.output_text or "").strip()
-    except openai.AuthenticationError:
-        raise RuntimeError("OpenAI authentication failed. Check your API key.") from None
-    except openai.RateLimitError:
-        raise RuntimeError("OpenAI rate limit reached. Please try again later.") from None
-    except openai.APITimeoutError:
-        raise RuntimeError("OpenAI request timed out. Please try again.") from None
-    except openai.APIConnectionError:
-        raise RuntimeError("Could not connect to OpenAI. Check your internet connection.") from None
-    except openai.APIStatusError as error:
-        status = getattr(error, "status_code", None) or getattr(error, "status", None)
-        raise RuntimeError(f"OpenAI request failed with status {status}.") from None
-    except openai.APIError:
-        raise RuntimeError("OpenAI request failed. Please try again.") from None
+    except Exception as error:  # noqa: BLE001
+        raise _translate_openai_error(error) from None
+
+
+def stream_ai(prompt: str) -> Iterator[str]:
+    """Stream a prompt to OpenAI and yield answer chunks."""
+    if not prompt or not prompt.strip():
+        raise ValueError("Prompt cannot be empty.")
+
+    client = _get_client()
+
+    try:
+        with client.responses.stream(
+            model=MODEL_NAME,
+            input=prompt.strip(),
+        ) as stream:
+            for event in stream:
+                if event.type == "response.output_text.delta" and event.delta:
+                    yield event.delta
+            final_response = stream.get_final_response()
+            if not (final_response.output_text or "").strip():
+                raise RuntimeError("CampusMate AI returned an empty answer. Please try again.")
+    except RuntimeError:
+        raise
+    except Exception as error:  # noqa: BLE001
+        raise _translate_openai_error(error) from None
 
 
 def main() -> None:

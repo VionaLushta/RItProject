@@ -1,5 +1,129 @@
 {
-  "questions": [],
-  "quizzes": [],
-  "statistics": {}
+  "questions": [
+    {
+      "question": "hello",
+      "answer": "# Hello! How Can I Help You?\n\nWelcome! I'm here to assist you with your studies. What specific questions do you have? Feel free to ask anything!"
+    },
+    {
+      "question": "hi",
+      "answer": "# Hello! How Can I Help You?\n\nIt’s great to see you! If you have any questions about your studies or need help with a specific topic, feel free to ask. Here are a few things you could inquire about:\n\n- Study tips or techniques\n- Homework help on specific subjects\n- General understanding of a topic\n- Advice on exam preparation\n\nJust let me know what you need help with!"
+    },
+    {
+      "question": "hej",
+      "answer": "# Hello! How Can I Help You?\n\nIt seems like you said \"hej,\" which is a greeting in Swedish! If you need help with a specific topic or have a question about studying, feel free to ask.\n\n### Here are some ideas for what you could ask about:\n- **Study tips**: strategies for effective learning.\n- **Subject help**: explanations of concepts in math, science, literature, etc.\n- **Resources**: recommendations for books, websites, or tools.\n  \nLet me know what you need assistance with, and I’ll be happy to help!"
+    },
+    {
+      "question": "a ruhen keto dialoget tona ketu",
+      "answer": "### Ruhuhet e Dialogut\n\nDuket se po kërkon informacion mbi një dialog ose bisedë të veçantë. Ja disa pika që mund të të ndihmojnë:\n\n- **Temat**: A jeni duke kërkuar për dialoge që lidhen me një temë të veçantë, si dashuria, miqësia, ose ndihma?\n  \n- **Personazhet**: A ka ndonjë karakter të veçantë që të intereson? \n\n- **Qëllimi**: A është ky dialog për një shkrim, një projekt shkollor, apo diçka tjetër?\n\nKjo do të ndihmojë për të kthyer një përgjigje më të saktë nëse specifikon më shumë. \n\n### Shembull Dialogu\n\nNëse po kërkon një shembull dialogu të thjeshtë, mund të krijosh diçka si kjo:\n\n```\nPersonazhi A: Si po shkon ditën tënde?\nPersonazhi B: E kam pak të ngarkuar, por po e kaloj.\n```\n\nNëse ke nevojë për diçka më specifike, më trego!"
+    },
+    {
+      "question": "hello",
+      "answer": "## Hello! How Can I Assist You?\n\nWelcome! I'm here to help you with your study needs. Whether you have questions about a specific topic, need help with homework, or want study tips, feel free to ask!\n\n### Some ideas to get started:\n- **Subject-specific questions**: Math, Science, History, etc.\n- **Study techniques**: Tips on effective studying or note-taking.\n- **Homework help**: Assistance with specific assignments.\n\nLet me know what you need!"
+    },
+    {
+      "question": "today we gonne learn about Ai",
+      "answer": "# Understanding AI Basics\n\nThat sounds great! Learning about Artificial Intelligence (AI) is an exciting journey. Here’s a simple overview to get you started.\n\n## What is AI?\n\nArtificial Intelligence refers to the ability of a machine or computer to imitate intelligent human behavior. Here are some key points:\n\n- **Types of AI**:\n  - **Narrow AI**: Designed to perform a specific task (e.g., voice assistants).\n  - **General AI**: Aims to understand and reason across a wide range of tasks, similar to human intelligence. (Still theoretical)\n\n- **How AI Works**:\n  - **Data**: AI systems require large amounts of data to learn from.\n  - **Algorithms**: Set of rules or formulas used for data processing.\n  - **Machine Learning (ML)**: A subset of AI that uses statistical techniques to give computers the ability to \"learn\" from data.\n\n## Key Concepts in AI\n\n- **Neural Networks**: Algorithms modeled after the human brain, used in deep learning.\n- **Natural Language Processing (NLP)**: Enables machines to understand human language.\n- **Computer Vision**: Allows machines to interpret and make decisions based on visual data.\n\n## Applications of AI\n\nAI has numerous applications across different fields:\n\n- **Healthcare**: Disease diagnosis and personalized medicine.\n- **Finance**: Fraud detection and automated trading.\n- **Manufacturing**: Robotics and predictive maintenance.\n\n## Next Steps\n\nTo deepen your understanding, consider exploring the following resources:\n\n- **Online Courses**: Websites like Coursera or edX offer courses in AI.\n- **Books**: Look for introductory books on AI and machine learning.\n\nIf you have specific areas of AI you want to learn about, feel free to ask!"
+    },
+    {
+      "question": "qka do bejme sot",
+      "answer": "## Çfarë të bëjmë sot?\n\nNëse po kërkon ide për aktivitete për sot, ja disa mundësi:\n\n- **Studim:** \n  - Rishiko materialin e klasës.\n  - Përgatit për provime ose detyra.\n\n- **Aktivitet fizik:**\n  - Shkruaj në palestër ose ec në natyrë.\n  - Provo një aktivitet të ri si vallëzim ose not.\n\n- **Socializim:** \n  - Takohu me miqtë për të kaluar kohë së bashku.\n  - Organizoni një ngjarje online si një lojë ose bisedë.\n\n- **Kreativitet:**\n  - Puno në një projekt artistik ose craft.\n  - Shkruaj në një ditar ose fillo një blog.\n\nZgjidh një aktivite që të frymëzon dhe që të ndihmon të ndihesh më mirë! Nëse ke ndonjë plan specifik në mendje, më thuaj për të diskutuar më shumë rreth tij."
+    },
+    {
+      "question": "hiii",
+      "answer": "### Hello! How Can I Help You Today?\n\nIt's great to hear from you! How can I assist you with your studies? Feel free to ask any questions or share what topics you're working on!"
+    }
+  ],
+  "quizzes": [
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    },
+    {
+      "topic": "about fitness",
+      "difficulty": "intermediate",
+      "total_questions": 5,
+      "correct_answers": 0,
+      "incorrect_answers": 5,
+      "score_percentage": 0.0
+    }
+  ],
+  "statistics": {
+    "Student": {
+      "name": "Student",
+      "questions_asked": 8,
+      "quizzes_completed": 3,
+      "correct_answers": 0,
+      "incorrect_answers": 15
+    }
+  },
+  "interactions": [
+    {
+      "type": "ask_ai",
+      "title": "Ask AI",
+      "input": "a ruhen keto dialoget tona ketu",
+      "output": "### Ruhuhet e Dialogut\n\nDuket se po kërkon informacion mbi një dialog ose bisedë të veçantë. Ja disa pika që mund të të ndihmojnë:\n\n- **Temat**: A jeni duke kërkuar për dialoge që lidhen me një temë të veçantë, si dashuria, miqësia, ose ndihma?\n  \n- **Personazhet**: A ka ndonjë karakter të veçantë që të intereson? \n\n- **Qëllimi**: A është ky dialog për një shkrim, një projekt shkollor, apo diçka tjetër?\n\nKjo do të ndihmojë për të kthyer një përgjigje më të saktë nëse specifikon më shumë. \n\n### Shembull Dialogu\n\nNëse po kërkon një shembull dialogu të thjeshtë, mund të krijosh diçka si kjo:\n\n```\nPersonazhi A: Si po shkon ditën tënde?\nPersonazhi B: E kam pak të ngarkuar, por po e kaloj.\n```\n\nNëse ke nevojë për diçka më specifike, më trego!",
+      "created_at": "2026-09-04T14:14:30+00:00"
+    },
+    {
+      "type": "ask_ai",
+      "title": "Ask AI",
+      "input": "hello",
+      "output": "## Hello! How Can I Assist You?\n\nWelcome! I'm here to help you with your study needs. Whether you have questions about a specific topic, need help with homework, or want study tips, feel free to ask!\n\n### Some ideas to get started:\n- **Subject-specific questions**: Math, Science, History, etc.\n- **Study techniques**: Tips on effective studying or note-taking.\n- **Homework help**: Assistance with specific assignments.\n\nLet me know what you need!",
+      "created_at": "2026-09-04T14:25:02+00:00"
+    },
+    {
+      "type": "ask_ai",
+      "title": "Ask AI",
+      "input": "today we gonne learn about Ai",
+      "output": "# Understanding AI Basics\n\nThat sounds great! Learning about Artificial Intelligence (AI) is an exciting journey. Here’s a simple overview to get you started.\n\n## What is AI?\n\nArtificial Intelligence refers to the ability of a machine or computer to imitate intelligent human behavior. Here are some key points:\n\n- **Types of AI**:\n  - **Narrow AI**: Designed to perform a specific task (e.g., voice assistants).\n  - **General AI**: Aims to understand and reason across a wide range of tasks, similar to human intelligence. (Still theoretical)\n\n- **How AI Works**:\n  - **Data**: AI systems require large amounts of data to learn from.\n  - **Algorithms**: Set of rules or formulas used for data processing.\n  - **Machine Learning (ML)**: A subset of AI that uses statistical techniques to give computers the ability to \"learn\" from data.\n\n## Key Concepts in AI\n\n- **Neural Networks**: Algorithms modeled after the human brain, used in deep learning.\n- **Natural Language Processing (NLP)**: Enables machines to understand human language.\n- **Computer Vision**: Allows machines to interpret and make decisions based on visual data.\n\n## Applications of AI\n\nAI has numerous applications across different fields:\n\n- **Healthcare**: Disease diagnosis and personalized medicine.\n- **Finance**: Fraud detection and automated trading.\n- **Manufacturing**: Robotics and predictive maintenance.\n\n## Next Steps\n\nTo deepen your understanding, consider exploring the following resources:\n\n- **Online Courses**: Websites like Coursera or edX offer courses in AI.\n- **Books**: Look for introductory books on AI and machine learning.\n\nIf you have specific areas of AI you want to learn about, feel free to ask!",
+      "created_at": "2026-09-04T14:25:37+00:00"
+    },
+    {
+      "type": "ask_ai",
+      "title": "Ask AI",
+      "input": "qka do bejme sot",
+      "output": "## Çfarë të bëjmë sot?\n\nNëse po kërkon ide për aktivitete për sot, ja disa mundësi:\n\n- **Studim:** \n  - Rishiko materialin e klasës.\n  - Përgatit për provime ose detyra.\n\n- **Aktivitet fizik:**\n  - Shkruaj në palestër ose ec në natyrë.\n  - Provo një aktivitet të ri si vallëzim ose not.\n\n- **Socializim:** \n  - Takohu me miqtë për të kaluar kohë së bashku.\n  - Organizoni një ngjarje online si një lojë ose bisedë.\n\n- **Kreativitet:**\n  - Puno në një projekt artistik ose craft.\n  - Shkruaj në një ditar ose fillo një blog.\n\nZgjidh një aktivite që të frymëzon dhe që të ndihmon të ndihesh më mirë! Nëse ke ndonjë plan specifik në mendje, më thuaj për të diskutuar më shumë rreth tij.",
+      "created_at": "2026-09-04T14:27:29+00:00"
+    },
+    {
+      "type": "ask_ai",
+      "title": "Ask AI",
+      "input": "hiii",
+      "output": "### Hello! How Can I Help You Today?\n\nIt's great to hear from you! How can I assist you with your studies? Feel free to ask any questions or share what topics you're working on!",
+      "created_at": "2026-09-04T14:30:44+00:00"
+    },
+    {
+      "type": "quiz",
+      "title": "Generate Quiz",
+      "input": "about fitness",
+      "output": "{\"topic\": \"about fitness\", \"difficulty\": \"intermediate\", \"questions\": [{\"question\": \"What is the primary role of carbohydrates in athletic performance?\", \"options\": {\"A\": \"To provide energy\", \"B\": \"To build muscle\", \"C\": \"To enhance flexibility\", \"D\": \"To improve endurance\"}, \"correct_answer\": \"A\"}, {\"question\": \"Which type of training is most effective for improving muscle strength?\", \"options\": {\"A\": \"Aerobic training\", \"B\": \"Resistance training\", \"C\": \"Flexibility training\", \"D\": \"Balance training\"}, \"correct_answer\": \"B\"}, {\"question\": \"How does hydration affect exercise performance?\", \"options\": {\"A\": \"It has no significant effect.\", \"B\": \"It can reduce fatigue and improve endurance.\", \"C\": \"It only benefits strength training.\", \"D\": \"It is only important before exercise.\"}, \"correct_answer\": \"B\"}, {\"question\": \"Which of the following is a benefit of regular cardiovascular exercise?\", \"options\": {\"A\": \"Increased muscle mass\", \"B\": \"Improved heart health\", \"C\": \"Enhanced joint flexibility\", \"D\": \"Decreased metabolic rate\"}, \"correct_answer\": \"B\"}, {\"question\": \"What is the recommended duration for a typical strength training session?\", \"options\": {\"A\": \"5-10 minutes\", \"B\": \"30-60 minutes\", \"C\": \"90-120 minutes\", \"D\": \"2 hours or more\"}, \"correct_answer\": \"B\"}]}",
+      "created_at": "2026-09-04T14:33:50+00:00"
+    },
+    {
+      "type": "quiz",
+      "title": "Generate Quiz",
+      "input": "about fitness",
+      "output": "{\"topic\": \"about fitness\", \"difficulty\": \"intermediate\", \"questions\": [{\"question\": \"Which of the following is the primary source of energy for high-intensity exercise?\", \"options\": {\"A\": \"Carbohydrates\", \"B\": \"Fats\", \"C\": \"Proteins\", \"D\": \"Vitamins\"}, \"correct_answer\": \"A\"}, {\"question\": \"What is the recommended duration for an effective strength training session?\", \"options\": {\"A\": \"15-30 minutes\", \"B\": \"30-60 minutes\", \"C\": \"60-90 minutes\", \"D\": \"90-120 minutes\"}, \"correct_answer\": \"B\"}, {\"question\": \"Which type of exercise is primarily designed to improve cardiovascular endurance?\", \"options\": {\"A\": \"Yoga\", \"B\": \"Weightlifting\", \"C\": \"Running\", \"D\": \"Pilates\"}, \"correct_answer\": \"C\"}, {\"question\": \"What does BMI stand for, and why is it useful in fitness?\", \"options\": {\"A\": \"Body Mass Index, used to assess body fat based on height and weight\", \"B\": \"Body Muscle Indicator, used to measure muscle mass\", \"C\": \"Bone Mass Index, used to determine bone strength\", \"D\": \"Baseline Metabolic Indicator, used to calculate daily calorie needs\"}, \"correct_answer\": \"A\"}, {\"question\": \"Which of the following is a defining characteristic of aerobic exercise?\", \"options\": {\"A\": \"It requires more oxygen and can be sustained for longer periods\", \"B\": \"It occurs at high intensity for short bursts\", \"C\": \"It exclusively focuses on building muscle mass\", \"D\": \"It involves no movement, focusing solely on flexibility\"}, \"correct_answer\": \"A\"}]}",
+      "created_at": "2026-09-04T14:34:30+00:00"
+    },
+    {
+      "type": "quiz",
+      "title": "Generate Quiz",
+      "input": "about fitness",
+      "output": "{\"topic\": \"about fitness\", \"difficulty\": \"intermediate\", \"questions\": [{\"question\": \"What is the recommended duration of weekly aerobic exercise for adults?\", \"options\": {\"A\": \"150 minutes\", \"B\": \"75 minutes\", \"C\": \"300 minutes\", \"D\": \"120 minutes\"}, \"correct_answer\": \"A\"}, {\"question\": \"Which nutrient is most important for muscle recovery after a workout?\", \"options\": {\"A\": \"Carbohydrates\", \"B\": \"Fats\", \"C\": \"Proteins\", \"D\": \"Vitamins\"}, \"correct_answer\": \"C\"}, {\"question\": \"Which of the following is an effective way to increase the intensity of a workout?\", \"options\": {\"A\": \"Increasing the number of repetitions\", \"B\": \"Decreasing rest time\", \"C\": \"Adding weights\", \"D\": \"All of the above\"}, \"correct_answer\": \"D\"}, {\"question\": \"What does BMI stand for, and what does it measure?\", \"options\": {\"A\": \"Body Muscle Index, measuring muscle mass\", \"B\": \"Body Mass Index, measuring body fat\", \"C\": \"Body Measurement Index, measuring overall health\", \"D\": \"Body Metabolism Index, measuring metabolic rate\"}, \"correct_answer\": \"B\"}, {\"question\": \"Which type of exercise primarily improves flexibility?\", \"options\": {\"A\": \"Strength training\", \"B\": \"Cardio\", \"C\": \"Yoga\", \"D\": \"Plyometrics\"}, \"correct_answer\": \"C\"}]}",
+      "created_at": "2026-09-04T14:34:40+00:00"
+    }
+  ]
 }

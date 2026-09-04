@@ -142,7 +142,6 @@ export function Sidebar({ mobileOpen, onClose }) {
     <aside className={`sidebar ${mobileOpen ? "is-open" : ""}`} aria-label="Primary navigation">
       <div className="sidebar__brand">
         <div className="brand-mark" aria-hidden="true">
-          <span className="brand-mark__ring" />
           <span className="brand-mark__core" />
           <span className="brand-mark__spark" />
         </div>
@@ -150,9 +149,6 @@ export function Sidebar({ mobileOpen, onClose }) {
           <div className="brand-title">CampusMate AI</div>
           <div className="brand-subtitle">Study assistant</div>
         </div>
-        <button className="icon-button sidebar__close" type="button" onClick={onClose} aria-label="Close navigation">
-          <Icon name="close" />
-        </button>
       </div>
 
       <nav className="sidebar__nav">
@@ -222,12 +218,6 @@ export function AppLayout({ children, mobileNavOpen, onMenuClick, onCloseMobileN
         <main className="main-content">
           <div className="main-content__inner">{children}</div>
         </main>
-        <aside className="ai-notice" role="note" aria-label="Responsible AI notice">
-          <span className="ai-notice__icon" aria-hidden="true">
-            <Icon name="shield" />
-          </span>
-          <p>AI responses may contain mistakes. Verify important information and never enter passwords or sensitive data.</p>
-        </aside>
       </div>
     </div>
   );

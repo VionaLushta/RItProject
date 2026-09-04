@@ -9,7 +9,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
-from backend.http_api import DEFAULT_HOST, DEFAULT_PORT, dispatch_api_request
+from backend.http_api import DEFAULT_HOST, DEFAULT_PORT, _student_from_storage, dispatch_api_request
+from backend.question_service import stream_question_answer
 from backend.storage import DEFAULT_HISTORY_PATH
 
 
@@ -26,6 +27,22 @@ class CampusMateRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
         self.end_headers()
         self.wfile.write(response)
+
+    def _send_stream_headers(self) -> None:
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Connection", "close")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
+    def _send_stream_event(self, event: str, data: dict[str, Any]) -> None:
+        payload = json.dumps(data, ensure_ascii=False)
+        message = f"event: {event}\ndata: {payload}\n\n".encode("utf-8")
+        self.wfile.write(message)
+        self.wfile.flush()
 
     def _parse_json_body(self) -> Any:
         content_length = int(self.headers.get("Content-Length", "0") or "0")
@@ -54,6 +71,39 @@ class CampusMateRequestHandler(BaseHTTPRequestHandler):
             body = self._parse_json_body()
         except json.JSONDecodeError:
             self._send_json(HTTPStatus.BAD_REQUEST, {"error": "Request body must be valid JSON."})
+            return
+
+        if self.path.split("?", 1)[0].rstrip("/") == "/api/ask-ai/stream":
+            if not isinstance(body, dict):
+                self._send_json(HTTPStatus.BAD_REQUEST, {"error": "Request body must be a JSON object."})
+                return
+
+            student = _student_from_storage(self.storage_path)
+
+            try:
+                self._send_stream_headers()
+                streamed_answer = []
+                for chunk in stream_question_answer(body.get("question", ""), student, self.storage_path):
+                    streamed_answer.append(chunk)
+                    self._send_stream_event("delta", {"chunk": chunk})
+
+                final_answer = "".join(streamed_answer).strip()
+                self._send_stream_event("done", {"answer": final_answer})
+                self.close_connection = True
+            except ValueError as exc:
+                self._send_stream_event("error", {"error": str(exc)})
+                self.close_connection = True
+            except RuntimeError as exc:
+                self._send_stream_event("error", {"error": str(exc)})
+                self.close_connection = True
+            except BrokenPipeError:
+                return
+            except Exception:
+                self._send_stream_event(
+                    "error",
+                    {"error": "CampusMate couldn't complete this request. Please try again."},
+                )
+                self.close_connection = True
             return
 
         status, payload = dispatch_api_request("POST", self.path, body=body, file_path=self.storage_path)
