@@ -125,6 +125,45 @@ export function Icon({ name }) {
           <path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z" />
         </svg>
       );
+    case "arrow-up":
+      return (
+        <svg {...commonProps}>
+          <path d="M12 19V5" />
+          <path d="m6 11 6-6 6 6" />
+        </svg>
+      );
+    case "copy":
+      return (
+        <svg {...commonProps}>
+          <rect x="8" y="8" width="11" height="11" rx="2" />
+          <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+        </svg>
+      );
+    case "code":
+      return (
+        <svg {...commonProps}>
+          <path d="m8 9-4 3 4 3" />
+          <path d="m16 9 4 3-4 3" />
+          <path d="m14 5-4 14" />
+        </svg>
+      );
+    case "network":
+      return (
+        <svg {...commonProps}>
+          <rect x="9" y="3" width="6" height="5" rx="1" />
+          <rect x="3" y="16" width="6" height="5" rx="1" />
+          <rect x="15" y="16" width="6" height="5" rx="1" />
+          <path d="M12 8v4M6 16v-2h12v2" />
+        </svg>
+      );
+    case "brain":
+      return (
+        <svg {...commonProps}>
+          <path d="M9.5 4.5A3 3 0 0 0 6 7.4a3 3 0 0 0-1 5.6A3 3 0 0 0 8 18h1.5V6.5a2 2 0 0 0-2-2" />
+          <path d="M14.5 4.5A3 3 0 0 1 18 7.4a3 3 0 0 1 1 5.6 3 3 0 0 1-3 5h-1.5V6.5a2 2 0 0 1 2-2" />
+          <path d="M9.5 9h-2M14.5 9h2M9.5 14h-2M14.5 14h2" />
+        </svg>
+      );
     case "user":
       return (
         <svg {...commonProps}>

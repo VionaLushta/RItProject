@@ -13,8 +13,9 @@ from backend.question_service import ask_question
 from backend.quiz import generate_quiz, score_quiz
 from backend.statistics_service import get_statistics
 from backend.student import Student
-from backend.storage import load_data
 from backend.storage import add_ai_interaction
+from backend.storage import delete_history_record
+from backend.storage import load_data
 from backend.summarization_service import summarize_text
 
 API_PREFIX = "/api"
@@ -78,6 +79,14 @@ def dispatch_api_request(
 
         if method == "GET" and normalized_path == f"{API_PREFIX}/history":
             return HTTPStatus.OK, get_history(file_path)
+
+        if method == "DELETE" and normalized_path == f"{API_PREFIX}/history":
+            if not isinstance(body, dict):
+                raise ValueError("Request body must be a JSON object.")
+            section = str(body.get("section", ""))
+            index = _safe_int(body.get("index"), -1)
+            result = delete_history_record(section, index, file_path)
+            return HTTPStatus.OK, result
 
         if method == "GET" and normalized_path == f"{API_PREFIX}/statistics":
             return HTTPStatus.OK, get_statistics(file_path)

@@ -214,18 +214,25 @@ export function getHistory() {
   return requestWithLocalFallback("/history");
 }
 
+export function deleteHistoryItem(section, index) {
+  return requestWithLocalFallback("/history", {
+    method: "DELETE",
+    body: JSON.stringify({ section, index }),
+  });
+}
+
 export function getStatistics() {
   return requestWithLocalFallback("/statistics");
 }
 
-async function requestWithLocalFallback(path) {
+async function requestWithLocalFallback(path, options = { method: "GET" }) {
   try {
-    return await requestJson(path, { method: "GET" });
+    return await requestJson(path, options);
   } catch (error) {
     const fallbackBase = API_BASE_URL === "/api" ? "http://127.0.0.1:8000/api" : "/api";
 
     try {
-      return await requestJson(path, { method: "GET" }, fallbackBase);
+      return await requestJson(path, options, fallbackBase);
     } catch {
       throw error;
     }

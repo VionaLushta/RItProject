@@ -128,6 +128,22 @@ class HttpApiTests(unittest.TestCase):
         self.assertEqual(int(status_stats), 200)
         self.assertEqual(stats_payload["questions_asked"], 0)
 
+    def test_delete_history_endpoint_removes_requested_item(self) -> None:
+        add_question_record("What is Python?", "A language.", self.storage_path)
+
+        status, payload = dispatch_api_request(
+            "DELETE",
+            "/api/history",
+            {"section": "questions", "index": 0},
+            self.storage_path,
+        )
+        status_history, history_payload = dispatch_api_request("GET", "/api/history", file_path=self.storage_path)
+
+        self.assertEqual(int(status), 200)
+        self.assertEqual(payload["deleted"]["question"], "What is Python?")
+        self.assertEqual(int(status_history), 200)
+        self.assertEqual(history_payload["questions"], [])
+
     def test_invalid_json_body_is_rejected(self) -> None:
         status, payload = dispatch_api_request("POST", "/api/ask-ai", None, self.storage_path)
 

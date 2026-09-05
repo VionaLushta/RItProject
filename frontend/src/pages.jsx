@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QUICK_ACTIONS, DIFFICULTY_OPTIONS, SUMMARY_STYLE_OPTIONS, QUIZ_COUNT_OPTIONS } from "./appData";
 import { MarkdownResponse } from "./markdownRenderer";
 import {
   ActionButton,
   Field,
+  Icon,
   InputField,
   MetricCard,
   QuickActionCard,
@@ -15,6 +16,7 @@ import {
 import {
   ApiError,
   askQuestionStream,
+  deleteHistoryItem,
   explainTopic,
   generateQuiz,
   getHistory,
@@ -45,6 +47,24 @@ function formatInteractionDate(value) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+}
+
+function previewText(value, maxLength = 150) {
+  if (!value) {
+    return "No preview available yet.";
+  }
+
+  const cleaned = String(value)
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/[#*_`>[\]()]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (cleaned.length <= maxLength) {
+    return cleaned;
+  }
+
+  return `${cleaned.slice(0, maxLength).trim()}...`;
 }
 
 function LoadingNotice({ text }) {
@@ -97,11 +117,14 @@ export function DashboardPage() {
 
   return (
     <div className="dashboard">
-      <section className="dashboard-hero dashboard-hero--featured">
+      <section className="dashboard-hero">
         <div className="dashboard-hero__copy">
-          <p className="eyebrow">CampusMate AI</p>
+          <div className="ask-chat__welcome-icon dashboard-hero__icon" aria-hidden="true">
+            <Icon name="dashboard" />
+          </div>
+          <p className="eyebrow">CAMPUSMATE AI</p>
           <h2>Welcome to CampusMate AI</h2>
-          <p>Your study tools, organized in one place.</p>
+          <p>Choose a study tool, ask questions, generate quizzes, and track your progress in one place.</p>
         </div>
         <div className="dashboard-hero__visual" aria-hidden="true">
           <div className="dashboard-hero__mesh" />
@@ -141,6 +164,13 @@ export function DashboardPage() {
           {QUICK_ACTIONS.map((item) => (
             <QuickActionCard key={item.path} {...item} />
           ))}
+          <QuickActionCard
+            label="History"
+            description="Review your saved work."
+            path="/history"
+            icon="history"
+            actionLabel="Open History"
+          />
         </div>
       </section>
 
@@ -174,7 +204,6 @@ export function DashboardPage() {
             hint={loading ? "Loading..." : "From backend statistics"}
             icon="chart"
           />
-          <MetricCard label="History" value="View your study activity" hint="Open your saved questions and quizzes" icon="history" to="/history" />
         </div>
       </section>
     </div>
@@ -183,11 +212,40 @@ export function DashboardPage() {
 
 export function AskAiPage() {
   const [question, setQuestion] = useState("");
-  const [submittedQuestion, setSubmittedQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [validationError, setValidationError] = useState("");
+  const textareaRef = useRef(null);
+  const threadEndRef = useRef(null);
+
+  const suggestions = [
+    { question: "What is the difference between TCP and UDP?", icon: "network", label: "Networking" },
+    { question: "Explain object-oriented programming simply.", icon: "code", label: "Programming" },
+    { question: "How does subnetting work?", icon: "network", label: "Computer networks" },
+    { question: "Create a short Python practice task.", icon: "brain", label: "Practice task" },
+  ];
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, loading]);
+
+  function resizeTextarea() {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      return;
+    }
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 180)}px`;
+  }
+
+  function selectSuggestion(value) {
+    setQuestion(value);
+    setValidationError("");
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      resizeTextarea();
+    });
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -201,21 +259,32 @@ export function AskAiPage() {
     setLoading(true);
     setError("");
     setValidationError("");
-    setSubmittedQuestion(trimmedQuestion);
+    const assistantMessageId = `${Date.now()}-assistant`;
+    setMessages((current) => [
+      ...current,
+      { id: `${Date.now()}-user`, role: "user", content: trimmedQuestion },
+      { id: assistantMessageId, role: "assistant", content: "" },
+    ]);
     setQuestion("");
-    setAnswer("");
+    requestAnimationFrame(resizeTextarea);
 
     try {
       await askQuestionStream(trimmedQuestion, {
         onChunk: (chunk, currentAnswer) => {
-          setAnswer(currentAnswer || chunk);
+          setMessages((current) => current.map((message) => (
+            message.id === assistantMessageId
+              ? { ...message, content: currentAnswer || chunk }
+              : message
+          )));
         },
         onDone: (finalAnswer) => {
-          setAnswer(finalAnswer);
+          setMessages((current) => current.map((message) => (
+            message.id === assistantMessageId ? { ...message, content: finalAnswer } : message
+          )));
         },
       });
     } catch (err) {
-      setAnswer("");
+      setMessages((current) => current.filter((message) => message.id !== assistantMessageId));
       setError(err instanceof ApiError ? err.message : "CampusMate couldn't complete this request. Please try again.");
     } finally {
       setLoading(false);
@@ -224,38 +293,65 @@ export function AskAiPage() {
 
   return (
     <section className="tool-page ask-chat">
-      <div className="tool-page__intro">
-        <p className="eyebrow">Ask AI</p>
-        <h2>Ask CampusMate a study question.</h2>
-        <p>Get a clear answer from the existing Python backend.</p>
-      </div>
-
-      {submittedQuestion || answer ? (
+      {messages.length === 0 ? (
+        <div className="ask-chat__welcome">
+          <div className="ask-chat__welcome-icon" aria-hidden="true">
+            <Icon name="spark" />
+          </div>
+          <p className="eyebrow">Ask AI</p>
+          <h2>Ask CampusMate a study question.</h2>
+          <p className="ask-chat__description">Get clear explanations, solve difficult questions, and learn faster with your personal AI study assistant.</p>
+          <div className="ask-chat__suggestions" aria-label="Suggested questions">
+            {suggestions.map((suggestion) => (
+              <button
+                className="ask-suggestion"
+                type="button"
+                key={suggestion.question}
+                onClick={() => selectSuggestion(suggestion.question)}
+              >
+                <span className="ask-suggestion__icon" aria-hidden="true"><Icon name={suggestion.icon} /></span>
+                <span className="ask-suggestion__copy">
+                  <span className="ask-suggestion__label">{suggestion.label}</span>
+                  <span className="ask-suggestion__question">{suggestion.question}</span>
+                </span>
+                <Icon name="arrow" />
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
         <div className="ask-chat__thread">
-          {submittedQuestion ? (
-            <div className="chat-message chat-message--user">
-              <div className="chat-bubble">{submittedQuestion}</div>
+          {messages.map((message) => (
+            <div className={`chat-message chat-message--${message.role}`} key={message.id}>
+              {message.role === "assistant" ? (
+                <div className="chat-message__avatar" aria-hidden="true"><Icon name="spark" /></div>
+              ) : null}
+              <div className="chat-message__content">
+                {message.role === "assistant" ? <span className="chat-message__name">CampusMate</span> : null}
+                {message.role === "assistant" ? (
+                  message.content ? <MarkdownResponse className="chat-answer" content={message.content} /> : null
+                ) : <div className="chat-bubble">{message.content}</div>}
+                {message.role === "assistant" && message.content ? (
+                  <button
+                    className="copy-answer"
+                    type="button"
+                    onClick={() => navigator.clipboard?.writeText(message.content)}
+                  >
+                    <Icon name="copy" /> Copy answer
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ))}
+          {loading ? (
+            <div className="chat-message chat-message--assistant chat-message--loading" role="status" aria-label="CampusMate is thinking">
+              <div className="chat-message__avatar" aria-hidden="true"><Icon name="spark" /></div>
+              <div className="typing-indicator"><span /><span /><span /></div>
             </div>
           ) : null}
-
-          {answer ? (
-            <section className="result-panel chat-message chat-message--assistant">
-              <div className="result-panel__header">
-                <div className="result-panel__identity">
-                  <div className="assistant-avatar" aria-hidden="true">
-                    <span className="assistant-avatar__spark">+</span>
-                  </div>
-                  <div>
-                    <h3>CampusMate</h3>
-                    <p>AI study assistant</p>
-                  </div>
-                </div>
-              </div>
-              <MarkdownResponse className="result-panel__body" content={answer} />
-            </section>
-          ) : null}
+          <div ref={threadEndRef} />
         </div>
-      ) : null}
+      )}
 
       <form className="tool-form ask-chat__composer" onSubmit={handleSubmit}>
         <Field
@@ -266,21 +362,31 @@ export function AskAiPage() {
         >
           <TextAreaField
             id="ask-question"
+            ref={textareaRef}
             rows={1}
-            placeholder="What is the difference between TCP and UDP?"
+            placeholder="Ask CampusMate anything…"
             value={question}
-            onChange={(event) => setQuestion(event.target.value)}
+            onChange={(event) => {
+              setQuestion(event.target.value);
+              setValidationError("");
+              resizeTextarea();
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                event.currentTarget.form?.requestSubmit();
+              }
+            }}
           />
         </Field>
 
         <div className="form-actions">
-          <ActionButton type="submit" disabled={loading}>
-            {loading ? "Generating answer..." : "Ask CampusMate"}
-          </ActionButton>
+          <button className="ask-chat__send" type="submit" disabled={loading || !question.trim()} aria-label="Send question">
+            <Icon name="arrow-up" />
+          </button>
         </div>
       </form>
 
-      {loading ? <div className="chat-typing" role="status">CampusMate is thinking<span>...</span></div> : null}
       {error ? <StatusBanner tone="error" icon="alert" title="Request failed" message={error} /> : null}
     </section>
   );
@@ -320,42 +426,47 @@ export function ExplainTopicPage() {
 
   return (
     <section className="tool-page explain-page">
-      <div className="tool-page__intro">
-        <p className="eyebrow">Explain Topic</p>
-        <h2>Explore a topic at the right level.</h2>
-        <p>Choose a difficulty and let the backend produce the explanation.</p>
+      <div className="tool-page__intro explain-page__intro">
+        <div className="ask-chat__welcome-icon explain-page__icon" aria-hidden="true">
+          <Icon name="lightbulb" />
+        </div>
+        <p className="eyebrow">EXPLAIN TOPIC</p>
+        <h2>Understand any topic at your level</h2>
+        <p>Choose a topic and difficulty, then get a clear explanation.</p>
       </div>
 
       <form className="tool-form explain-form" onSubmit={handleSubmit}>
-        <Field
-          label="Topic"
-          htmlFor="explain-topic"
-          hint="Enter the topic you want CampusMate to explain."
-          error={validationError}
-          required
-        >
+        <Field label="Topic" htmlFor="explain-topic" error={validationError} required>
           <InputField
             id="explain-topic"
             type="text"
-            placeholder="Photosynthesis"
+            placeholder="Enter a topic you want to understand..."
             value={topic}
             onChange={(event) => setTopic(event.target.value)}
           />
         </Field>
 
-        <Field label="Difficulty" htmlFor="explain-difficulty" hint="Select the level that fits your study needs." required>
-          <SelectField id="explain-difficulty" value={difficulty} onChange={(event) => setDifficulty(event.target.value)}>
+        <div className="explain-difficulty">
+          <span className="field__label">Difficulty</span>
+          <div className="explain-difficulty__options" role="radiogroup" aria-label="Difficulty">
             {DIFFICULTY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
+              <button
+                key={option.value}
+                className={difficulty === option.value ? "is-selected" : ""}
+                type="button"
+                role="radio"
+                aria-checked={difficulty === option.value}
+                onClick={() => setDifficulty(option.value)}
+              >
                 {option.label}
-              </option>
+              </button>
             ))}
-          </SelectField>
-        </Field>
+          </div>
+        </div>
 
         <div className="form-actions">
-          <ActionButton type="submit" disabled={loading}>
-            {loading ? "Creating explanation..." : "Explain Topic"}
+          <ActionButton className="explain-submit" type="submit" disabled={loading}>
+            <span>{loading ? "Creating explanation..." : "Generate Explanation"}</span>
           </ActionButton>
         </div>
       </form>
@@ -364,7 +475,7 @@ export function ExplainTopicPage() {
       {error ? <StatusBanner tone="error" icon="alert" title="Request failed" message={error} /> : null}
 
       {explanation ? (
-        <section className="result-panel">
+        <section className="result-panel explain-result">
           <div className="result-panel__header">
             <h3>Explanation</h3>
           </div>
@@ -409,17 +520,19 @@ export function SummarizePage() {
 
   return (
     <section className="tool-page summarize-page">
-      <div className="tool-page__intro">
-        <p className="eyebrow">Summarize Text</p>
+      <div className="tool-page__intro summarize-page__intro">
+        <div className="ask-chat__welcome-icon summarize-page__icon" aria-hidden="true">
+          <Icon name="summary" />
+        </div>
+        <p className="eyebrow">SUMMARIZE</p>
         <h2>Turn long material into useful study notes.</h2>
-        <p>Choose a summary style and send the text to the backend.</p>
+        <p>Paste your text, choose a style, then get a clear study summary.</p>
       </div>
 
       <form className="tool-form summarize-form" onSubmit={handleSubmit}>
         <Field
           label="Source text"
           htmlFor="summary-text"
-          hint="Paste notes, an article, or a passage you want summarized."
           error={validationError}
           required
         >
@@ -432,18 +545,26 @@ export function SummarizePage() {
           />
         </Field>
 
-        <Field label="Summary style" htmlFor="summary-style" hint="Pick the summary format that helps you study best." required>
-          <SelectField id="summary-style" value={style} onChange={(event) => setStyle(event.target.value)}>
+        <div className="summarize-style">
+          <span className="field__label">Summary style</span>
+          <div className="summarize-style__options" role="radiogroup" aria-label="Summary style">
             {SUMMARY_STYLE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
+              <button
+                key={option.value}
+                className={style === option.value ? "is-selected" : ""}
+                type="button"
+                role="radio"
+                aria-checked={style === option.value}
+                onClick={() => setStyle(option.value)}
+              >
                 {option.label}
-              </option>
+              </button>
             ))}
-          </SelectField>
-        </Field>
+          </div>
+        </div>
 
         <div className="form-actions">
-          <ActionButton type="submit" disabled={loading}>
+          <ActionButton className="summarize-submit" type="submit" disabled={loading}>
             {loading ? "Summarizing..." : "Summarize Text"}
           </ActionButton>
         </div>
@@ -453,7 +574,7 @@ export function SummarizePage() {
       {error ? <StatusBanner tone="error" icon="alert" title="Request failed" message={error} /> : null}
 
       {summary ? (
-        <section className="result-panel">
+        <section className="result-panel summarize-result">
           <div className="result-panel__header">
             <h3>Summary</h3>
           </div>
@@ -537,45 +658,64 @@ export function QuizPage() {
 
   return (
     <section className="tool-page quiz-page">
-      <div className="tool-page__intro">
-        <p className="eyebrow">Quiz</p>
+      <div className="tool-page__intro quiz-page__intro">
+        <div className="ask-chat__welcome-icon quiz-page__icon" aria-hidden="true">
+          <Icon name="quiz" />
+        </div>
+        <p className="eyebrow">QUIZ</p>
         <h2>Generate a practice quiz and submit your answers.</h2>
-        <p>Quiz scoring happens in Python. Answers stay hidden until you submit.</p>
+        <p>Choose a topic, difficulty, and question count to create a focused practice quiz.</p>
       </div>
 
       <form className="tool-form quiz-form" onSubmit={handleGenerate}>
-        <Field label="Topic" htmlFor="quiz-topic" hint="Enter the topic you want to test yourself on." error={validationError} required>
+        <Field label="Topic" htmlFor="quiz-topic" error={validationError} required>
           <InputField
             id="quiz-topic"
             type="text"
-            placeholder="Photosynthesis"
+            placeholder="Enter a topic you want to practice..."
             value={topic}
             onChange={(event) => setTopic(event.target.value)}
           />
         </Field>
 
-        <Field label="Difficulty" htmlFor="quiz-difficulty" required>
-          <SelectField id="quiz-difficulty" value={difficulty} onChange={(event) => setDifficulty(event.target.value)}>
+        <div className="quiz-difficulty">
+          <span className="field__label">Difficulty</span>
+          <div className="quiz-difficulty__options" role="radiogroup" aria-label="Difficulty">
             {DIFFICULTY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
+              <button
+                key={option.value}
+                className={difficulty === option.value ? "is-selected" : ""}
+                type="button"
+                role="radio"
+                aria-checked={difficulty === option.value}
+                onClick={() => setDifficulty(option.value)}
+              >
                 {option.label}
-              </option>
+              </button>
             ))}
-          </SelectField>
-        </Field>
+          </div>
+        </div>
 
-        <Field label="Number of questions" htmlFor="quiz-count" hint="Choose between 1 and 10." required>
-          <SelectField id="quiz-count" value={questionCount} onChange={(event) => setQuestionCount(event.target.value)}>
+        <div className="quiz-count">
+          <span className="field__label">Number of questions</span>
+          <div className="quiz-count__options" role="radiogroup" aria-label="Number of questions">
             {QUIZ_COUNT_OPTIONS.map((option) => (
-              <option key={option} value={option}>
+              <button
+                key={option}
+                className={questionCount === String(option) ? "is-selected" : ""}
+                type="button"
+                role="radio"
+                aria-checked={questionCount === String(option)}
+                onClick={() => setQuestionCount(String(option))}
+              >
                 {option}
-              </option>
+              </button>
             ))}
-          </SelectField>
-        </Field>
+          </div>
+        </div>
 
         <div className="form-actions">
-          <ActionButton type="submit" disabled={loadingGenerate}>
+          <ActionButton className="quiz-submit" type="submit" disabled={loadingGenerate}>
             {loadingGenerate ? "Generating quiz..." : "Generate Quiz"}
           </ActionButton>
         </div>
@@ -680,6 +820,8 @@ export function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reloadToken, setReloadToken] = useState(0);
+  const [openHistoryItem, setOpenHistoryItem] = useState("");
+  const [deletingHistoryItem, setDeletingHistoryItem] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -717,12 +859,30 @@ export function HistoryPage() {
   const hasInteractionHistory = interactions.length > 0;
   const hasActivity = hasInteractionHistory || questions.length > 0 || quizzes.length > 0;
 
+  async function handleDeleteHistoryItem(section, index, key) {
+    setDeletingHistoryItem(key);
+    setError("");
+
+    try {
+      await deleteHistoryItem(section, index);
+      setOpenHistoryItem("");
+      setReloadToken((value) => value + 1);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "CampusMate couldn't delete this history item. Please try again.");
+    } finally {
+      setDeletingHistoryItem("");
+    }
+  }
+
   return (
     <section className="tool-page history-page">
-      <div className="tool-page__intro">
-        <p className="eyebrow">History</p>
+      <div className="tool-page__intro history-page__intro">
+        <div className="ask-chat__welcome-icon history-page__icon" aria-hidden="true">
+          <Icon name="history" />
+        </div>
+        <p className="eyebrow">HISTORY</p>
         <h2>Review your stored questions and quizzes.</h2>
-        <p>Everything shown here comes from the Python backend history store.</p>
+        <p>See your recent AI activity, saved explanations, summaries, and completed quizzes.</p>
       </div>
 
       {loading ? <LoadingNotice text="Loading history..." /> : null}
@@ -765,8 +925,9 @@ export function HistoryPage() {
           </div>
           <div className="history-list">
             {[...interactions]
-              .sort((left, right) => new Date(right.created_at) - new Date(left.created_at))
-              .map((item, index) => {
+              .map((item, index) => ({ item, index }))
+              .sort((left, right) => new Date(right.item.created_at) - new Date(left.item.created_at))
+              .map(({ item, index }) => {
                 let quizDetails = null;
                 if (item.type === "quiz") {
                   try {
@@ -775,19 +936,57 @@ export function HistoryPage() {
                     quizDetails = null;
                   }
                 }
+                const itemKey = `interactions-${index}`;
+                const isOpen = openHistoryItem === itemKey;
+                const preview = quizDetails
+                  ? `Quiz generated with ${quizDetails.questions?.length ?? 0} questions at ${quizDetails.difficulty} level.`
+                  : previewText(item.output);
 
                 return (
-                  <article className="history-entry history-entry--interaction" key={`${item.created_at}-${index}`}>
-                    <div className="history-entry__topline">
-                      <div className="history-entry__type">{item.title || "AI Activity"}</div>
-                      <time dateTime={item.created_at}>{formatInteractionDate(item.created_at)}</time>
+                  <article className={`history-entry history-entry--interaction ${isOpen ? "is-open" : ""}`} key={itemKey}>
+                    <div className="history-entry__row">
+                      <button
+                        className="history-entry__summary"
+                        type="button"
+                        aria-expanded={isOpen}
+                        onClick={() => setOpenHistoryItem(isOpen ? "" : itemKey)}
+                      >
+                        <span className="history-entry__folder" aria-hidden="true"><Icon name="history" /></span>
+                        <span className="history-entry__summary-text">
+                          <span className="history-entry__topline">
+                            <span className="history-entry__type">{item.title || "AI Activity"}</span>
+                            <time dateTime={item.created_at}>{formatInteractionDate(item.created_at)}</time>
+                          </span>
+                          <strong>{item.input}</strong>
+                          <span className="history-entry__preview">{preview}</span>
+                        </span>
+                      </button>
+                      <button
+                        className="history-entry__more"
+                        type="button"
+                        aria-expanded={isOpen}
+                        onClick={() => setOpenHistoryItem(isOpen ? "" : itemKey)}
+                      >
+                        {isOpen ? "Less" : "More"}
+                      </button>
+                      <button
+                        className="history-entry__delete"
+                        type="button"
+                        disabled={deletingHistoryItem === itemKey}
+                        onClick={() => handleDeleteHistoryItem("interactions", index, itemKey)}
+                      >
+                        {deletingHistoryItem === itemKey ? "Deleting..." : "Delete"}
+                      </button>
                     </div>
-                    <h4>{item.input}</h4>
-                    {quizDetails ? (
-                      <p>Quiz generated with {quizDetails.questions?.length ?? 0} questions at {quizDetails.difficulty} level.</p>
-                    ) : (
-                      <MarkdownResponse className="history-entry__response" content={item.output} />
-                    )}
+                    {isOpen ? (
+                      <div className="history-entry__details">
+                        {quizDetails ? (
+                          <p>Quiz generated with {quizDetails.questions?.length ?? 0} questions at {quizDetails.difficulty} level.</p>
+                        ) : (
+                          <MarkdownResponse className="history-entry__response" content={item.output} />
+                        )}
+                      </div>
+                    ) : null}
                   </article>
                 );
               })}
@@ -803,11 +1002,37 @@ export function HistoryPage() {
           </div>
           <div className="history-list">
             {questions.map((item, index) => (
-              <article className="history-entry" key={`${item.question}-${index}`}>
-                <div className="history-entry__type">Question</div>
-                <h4>{item.question}</h4>
-                <MarkdownResponse className="history-entry__response" content={item.answer} />
-              </article>
+              (() => {
+                const itemKey = `questions-${index}`;
+                const isOpen = openHistoryItem === itemKey;
+                const preview = previewText(item.answer);
+
+                return (
+                  <article className={`history-entry ${isOpen ? "is-open" : ""}`} key={itemKey}>
+                    <div className="history-entry__row">
+                      <button className="history-entry__summary" type="button" aria-expanded={isOpen} onClick={() => setOpenHistoryItem(isOpen ? "" : itemKey)}>
+                        <span className="history-entry__folder" aria-hidden="true"><Icon name="history" /></span>
+                        <span className="history-entry__summary-text">
+                          <span className="history-entry__type">Question</span>
+                          <strong>{item.question}</strong>
+                          <span className="history-entry__preview">{preview}</span>
+                        </span>
+                      </button>
+                      <button className="history-entry__more" type="button" aria-expanded={isOpen} onClick={() => setOpenHistoryItem(isOpen ? "" : itemKey)}>
+                        {isOpen ? "Less" : "More"}
+                      </button>
+                      <button className="history-entry__delete" type="button" disabled={deletingHistoryItem === itemKey} onClick={() => handleDeleteHistoryItem("questions", index, itemKey)}>
+                        {deletingHistoryItem === itemKey ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
+                    {isOpen ? (
+                      <div className="history-entry__details">
+                        <MarkdownResponse className="history-entry__response" content={item.answer} />
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })()
             ))}
           </div>
         </section>
@@ -821,14 +1046,40 @@ export function HistoryPage() {
           </div>
           <div className="history-list">
             {quizzes.map((item, index) => (
-              <article className="history-entry" key={`${item.topic}-${index}`}>
-                <div className="history-entry__type">Quiz</div>
-                <h4>{item.topic}</h4>
-                <p>
-                  Difficulty: {item.difficulty} | Score: {item.score_percentage}% | Correct: {item.correct_answers}/
-                  {item.total_questions}
-                </p>
-              </article>
+              (() => {
+                const itemKey = `quizzes-${index}`;
+                const isOpen = openHistoryItem === itemKey;
+                const preview = `Difficulty: ${item.difficulty} | Score: ${item.score_percentage}% | Correct: ${item.correct_answers}/${item.total_questions}`;
+
+                return (
+                  <article className={`history-entry ${isOpen ? "is-open" : ""}`} key={itemKey}>
+                    <div className="history-entry__row">
+                      <button className="history-entry__summary" type="button" aria-expanded={isOpen} onClick={() => setOpenHistoryItem(isOpen ? "" : itemKey)}>
+                        <span className="history-entry__folder" aria-hidden="true"><Icon name="history" /></span>
+                        <span className="history-entry__summary-text">
+                          <span className="history-entry__type">Quiz</span>
+                          <strong>{item.topic}</strong>
+                          <span className="history-entry__preview">{preview}</span>
+                        </span>
+                      </button>
+                      <button className="history-entry__more" type="button" aria-expanded={isOpen} onClick={() => setOpenHistoryItem(isOpen ? "" : itemKey)}>
+                        {isOpen ? "Less" : "More"}
+                      </button>
+                      <button className="history-entry__delete" type="button" disabled={deletingHistoryItem === itemKey} onClick={() => handleDeleteHistoryItem("quizzes", index, itemKey)}>
+                        {deletingHistoryItem === itemKey ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
+                    {isOpen ? (
+                      <div className="history-entry__details">
+                        <p>
+                          Difficulty: {item.difficulty} | Score: {item.score_percentage}% | Correct: {item.correct_answers}/
+                          {item.total_questions}
+                        </p>
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })()
             ))}
           </div>
         </section>
@@ -841,6 +1092,7 @@ export function StatisticsPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -870,14 +1122,23 @@ export function StatisticsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [reloadToken]);
+
+  const averageScore = Number(stats?.average_quiz_score) || 0;
+  const answeredTotal = (Number(stats?.correct_answers) || 0) + (Number(stats?.incorrect_answers) || 0);
 
   return (
     <section className="tool-page statistics-page">
-      <div className="tool-page__intro">
-        <p className="eyebrow">Statistics</p>
+      <div className="tool-page__intro statistics-page__intro">
+        <div className="ask-chat__welcome-icon statistics-page__icon" aria-hidden="true">
+          <Icon name="statistics" />
+        </div>
+        <p className="eyebrow">STATISTICS</p>
         <h2>Track your real study activity.</h2>
-        <p>These values are loaded directly from the backend statistics store.</p>
+        <p>See your questions, quizzes, answers, and progress from the backend statistics store.</p>
+        <button className="statistics-refresh" type="button" disabled={loading} onClick={() => setReloadToken((value) => value + 1)}>
+          {loading ? "Refreshing..." : "Refresh stats"}
+        </button>
       </div>
 
       {loading ? <LoadingNotice text="Loading statistics..." /> : null}
@@ -895,13 +1156,14 @@ export function StatisticsPage() {
           <section className="result-panel statistics-score">
             <div className="result-panel__header">
               <h3>Average Quiz Score</h3>
+              <p>{answeredTotal} total answers checked</p>
             </div>
             <div className="score-meter" aria-label={`Average quiz score ${formatAverageScore(stats.average_quiz_score)}`}>
               <div className="score-meter__value">{formatAverageScore(stats.average_quiz_score)}</div>
               <div className="score-meter__track">
-                <div className="score-meter__fill" style={{ width: `${Math.max(0, Math.min(100, Number(stats.average_quiz_score) || 0))}%` }} />
+                <div className="score-meter__fill" style={{ width: `${Math.max(0, Math.min(100, averageScore))}%` }} />
               </div>
-              <p className="score-meter__caption">Loaded directly from Python statistics.</p>
+              <p className="score-meter__caption">Updated from your saved CampusMate activity.</p>
             </div>
           </section>
         </>

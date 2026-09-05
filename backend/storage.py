@@ -148,6 +148,22 @@ def add_quiz_record(quiz_record: dict[str, Any], file_path: str | Path | None = 
     return data
 
 
+def delete_history_record(section: str, index: int, file_path: str | Path | None = None) -> dict[str, Any]:
+    """Delete one history record from a known history section."""
+    if section not in {"interactions", "questions", "quizzes"}:
+        raise ValueError("History section must be interactions, questions, or quizzes.")
+
+    data = load_data(file_path)
+    records = data.setdefault(section, [])
+
+    if not isinstance(records, list) or index < 0 or index >= len(records):
+        raise ValueError("History item was not found.")
+
+    deleted = records.pop(index)
+    save_data(data, file_path)
+    return {"deleted": deleted, "history": data}
+
+
 def save_student_statistics(student: Student | dict[str, Any], file_path: str | Path | None = None) -> dict[str, Any]:
     """Save one student's counters under the statistics section."""
     data = load_data(file_path)
