@@ -2256,7 +2256,7 @@ body {
 
 .ask-chat__composer {
   position: fixed;
-  left: calc(var(--sidebar-width) + (100vw - var(--sidebar-width)) / 2);
+  left: calc(var(--sidebar-width) + (100vw - var(--sidebar-width)) / 2 - 2.5rem);
   bottom: 1rem;
   width: min(64rem, calc(100vw - var(--sidebar-width) - 2rem));
   transform: translateX(-50%);
